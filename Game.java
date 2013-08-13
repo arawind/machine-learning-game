@@ -6,8 +6,8 @@ import javax.swing.JFrame;
 public class Game extends JFrame {
 
 	public Game(){
-		add(new Board());
-		setSize(400, 300);
+		add(new Board(640,480));
+		setSize(640,480);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
 		setTitle("Ball");

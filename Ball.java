@@ -8,7 +8,7 @@ import javax.swing.ImageIcon;
 
 
 public class Ball {
-	private int curHeight, maxHeight;
+	private int curHeight, maxHeight, incrHeight;
 	private boolean up, animate;
 	private Image image;;
 	
@@ -16,7 +16,7 @@ public class Ball {
 		ImageIcon ii = new ImageIcon(this.getClass().getResource("ball.png"));
 		image = ii.getImage();
 		curHeight = 0;
-		maxHeight = -100;
+		incrHeight = -75;
 		up = true;
 	}
 	
@@ -30,24 +30,31 @@ public class Ball {
 	
 	public void animate(){
 		animate = true;
+		up = true;
+		maxHeight += incrHeight;
 	}
 	
 	public void stop(){
+		up = true;
 		animate = false;
+		maxHeight = 0;
+		curHeight = 0;
 	}
 	
 	public void move(){
 		if(animate){
-
 			int accel = (int) Math.floor(Math.sqrt(Math.abs(curHeight - maxHeight)));
 			if(up)
 				curHeight -= accel;
 			else
 				curHeight += accel;
-			if(curHeight <= maxHeight)
+			if(curHeight <= maxHeight){
 				up = false;
-			if(curHeight >= 0)
-				up = true;
+				curHeight += 1;
+			}
+			if(curHeight >= 0){
+				stop();
+			}
 		}
 	}
 }
