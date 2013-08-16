@@ -114,7 +114,7 @@ public class Board extends JPanel implements ActionListener{
 			g2d.drawImage(wall.getImage(), (wall.getX() + wallx) % screenX, wall.getY() + ball.getImage().getHeight(this), this);
 		}
 		
-		//wallx -= angleInc * 100/2;
+		wallx -= angleInc * 50;
 		
 		Toolkit.getDefaultToolkit().sync();
 		g.dispose();
