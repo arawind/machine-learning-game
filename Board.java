@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.geom.AffineTransform;
+import java.awt.image.ImageObserver;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -23,7 +24,7 @@ public class Board extends JPanel implements ActionListener{
 	private double angle, angleInc;
 	private int screenX, screenY, wallx;
 	private final double TIME_ACCEL, TIME_NORM;
-	private ArrayList<Wall> walls;
+	private ArrayList<Brick> walls;
 	public Board(int screenW, int screenH){
 		addKeyListener(new TAdapter());
 		setBackground(Color.black);
@@ -42,49 +43,14 @@ public class Board extends JPanel implements ActionListener{
 		angleInc = TIME_NORM;
 		
 		int x = 0;
-		walls = new ArrayList<Wall>();
+		walls = new ArrayList<Brick>();
 		while(x<=screenW){
-			Wall nWall = new Wall(x,screenY - 100);
+			Brick nWall = new Brick(x,screenY - 100);
 			walls.add(nWall);
 			
-			x += nWall.getImgH();
+			x += nWall.getImgH(this);
 		}
 	}
-	
-	public class Wall {
-		private int imgH, imgW, x, y;
-		private Image image;
-		
-		public Wall(int x, int y){
-			ImageIcon ii = new ImageIcon(this.getClass().getResource("wall.png"));
-			image = ii.getImage();
-			imgW = imgH = 20;
-			this.x = x;
-			this.y = y;
-		}
-		
-		public Image getImage(){
-			return image;
-		}
-		
-		public int getImgH(){
-			return imgH;
-		}
-		
-		public int getImgW(){
-			return imgW;
-		}
-		
-		public int getX(){
-			return x;
-		}
-		
-		public int getY(){
-			return y;
-		}
-		
-	};
-	
 	
 	public void startTimer2(){
 		if(timer2 == null){
@@ -101,24 +67,16 @@ public class Board extends JPanel implements ActionListener{
 	public void paint(Graphics g){
 		super.paint(g);
 		Graphics2D g2d = (Graphics2D) g;
-		AffineTransform at = AffineTransform.getTranslateInstance(100, screenY-100+ball.getY());
-		at.rotate(angle, ball.getImage().getWidth(this)*0.5, ball.getImage().getHeight(this)*0.5);
-		angle += angleInc;
-		if(angle >= 2*Math.PI)
-			angle = 0;
-		g2d.drawImage(ball.getImage(), at, this);
 		
-		if(wallx < screenX)
-			for(Wall wall : walls){
-				g2d.drawImage(wall.getImage(), (wall.getX() + wallx) % screenX, wall.getY() + ball.getImage().getHeight(this), this);
-			} //Base image
+		animateBall(g2d);
 		
-		for(Wall wall : walls){
-			g2d.drawImage(wall.getImage(), screenX + (wall.getX() + wallx) % screenX - wall.getImgW(), wall.getY() + ball.getImage().getHeight(this), this);
-		} // Looping image
+		animateWall(g2d);
 		
-		wallx -= (angleInc * 50)%screenX; //50 factor to convert the time scale into integer pixels
+		Obstacle ob = new Obstacle(300, 20, 2, this);
+		Obstacle ob2 = new Obstacle(780, 20, 3, this);
 		
+		ob.drawImage(g2d, wallx, screenY - 70, this);
+		ob2.drawImage(g2d, wallx, screenY - 70, this);
 		
 		Toolkit.getDefaultToolkit().sync();
 		g.dispose();
@@ -126,6 +84,30 @@ public class Board extends JPanel implements ActionListener{
 	
 	
 	
+	private void animateWall(Graphics2D g2d) {
+		if(wallx < screenX)
+			for(Brick wall : walls){
+				g2d.drawImage(wall.getImage(), (wall.getX() + wallx) % screenX, wall.getY() + ball.getImage().getHeight(this), this);
+			} //Base image
+		
+		for(Brick wall : walls){
+			g2d.drawImage(wall.getImage(), screenX + (wall.getX() + wallx) % screenX - wall.getImgW(this), wall.getY() + ball.getImage().getHeight(this), this);
+		} // Looping image
+		
+		wallx -= (angleInc * 50)%screenX; //50 factor to convert the time scale into integer pixels		
+	}
+
+	private void animateBall(Graphics2D g2d) {
+
+		AffineTransform at = AffineTransform.getTranslateInstance(100, screenY-100+ball.getY());
+		at.rotate(angle, ball.getImage().getWidth(this)*0.5, ball.getImage().getHeight(this)*0.5);
+		angle += angleInc;
+		if(angle >= 2*Math.PI)
+			angle = 0;
+		g2d.drawImage(ball.getImage(), at, this);
+		
+	}
+
 	public void actionPerformed(ActionEvent e){
 		repaint();
 		ball.move();
