@@ -8,15 +8,17 @@ import javax.swing.ImageIcon;
 
 
 public class Ball {
-	private int curHeight, maxHeight, incrHeight;
+	private int curHeight, maxHeight;
+	private final int incrHeight;
 	private boolean up, animate;
 	private Image image;;
-	
-	public Ball(){
+	private final double accelFactor;
+	public Ball(int height, double accelFactor){
 		ImageIcon ii = new ImageIcon(this.getClass().getResource("ball.png"));
 		image = ii.getImage();
 		curHeight = 0;
-		incrHeight = -75;
+		incrHeight = -height;
+		this.accelFactor = accelFactor; 
 		up = true;
 	}
 	
@@ -30,8 +32,9 @@ public class Ball {
 	
 	public void animate(){
 		animate = true;
-		up = true;
-		maxHeight += incrHeight;
+		if(up == true)
+			maxHeight += incrHeight; //You can accelerate the ball only before it falls down 
+		// ==> You can't lift it while it's falling down
 	}
 	
 	public void stop(){
@@ -43,7 +46,7 @@ public class Ball {
 	
 	public void move(){
 		if(animate){
-			int accel = (int) Math.floor(Math.sqrt(Math.abs(curHeight - maxHeight)));
+			int accel = (int) Math.floor(Math.pow(Math.abs(curHeight - maxHeight), accelFactor));
 			if(up)
 				curHeight -= accel;
 			else
