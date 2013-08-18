@@ -11,7 +11,7 @@ public class Ball {
 	private int curHeight, maxHeight;
 	private final int incrHeight;
 	private boolean up, animate;
-	private Image image;;
+	private final Image image;;
 	private final double accelFactor;
 	public Ball(int height, double accelFactor){
 		ImageIcon ii = new ImageIcon(this.getClass().getResource("ball.png"));

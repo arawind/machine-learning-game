@@ -26,11 +26,19 @@ public class Board extends JPanel implements ActionListener{
 	private final double TIME_ACCEL, TIME_NORM;
 	private final int OFFSET_X, OFFSET_Y;
 	private ArrayList<Brick> walls;
+	private ArrayList<Obstacle> obstacles;
+	
 	public Board(int screenW, int screenH){
+		TIME_NORM = 0.02;
+		TIME_ACCEL = 0.08;
+		OFFSET_X = 100;
+		OFFSET_Y = 40+20+30; //FIXME why 30?
+		
 		addKeyListener(new TAdapter());
 		setBackground(Color.black);
 		setFocusable(true);
 		setDoubleBuffered(true);
+		
 		screenX = screenW;
 		screenY = screenH;		
 		ball = new Ball(75, 0.22);
@@ -39,22 +47,25 @@ public class Board extends JPanel implements ActionListener{
 		timer = new Timer(5, this);
 		timer.start();
 		timer2 = null;
-		TIME_NORM = 0.02;
-		TIME_ACCEL = 0.08;
-		angleInc = TIME_NORM;
-		OFFSET_X = 100;
-		OFFSET_Y = 40+20+30; //FIXME why 30?
 		
+		angleInc = TIME_NORM;
+		
+		createBrickWall();
+		obstacles = new ArrayList<Obstacle>();
+		createObstacles();
+	}
+
+	
+	private void createBrickWall() {
 		int x = 0;
 		walls = new ArrayList<Brick>();
-		while(x<=screenW){
+		while(x<=screenX){
 			Brick nWall = new Brick(x, screenY - OFFSET_Y);
 			walls.add(nWall);
-			
 			x += nWall.getImgW(this);
-		}
+		}		
 	}
-	
+
 	public void startTimer2(){
 		if(timer2 == null){
 			timer2 = new Timer(1500, new TClass());
@@ -63,8 +74,7 @@ public class Board extends JPanel implements ActionListener{
 		else{
 			timer2.stop();
 			timer2.start();
-		}
-		
+		}		
 	}
 	
 	public void paint(Graphics g){
@@ -75,17 +85,56 @@ public class Board extends JPanel implements ActionListener{
 		
 		animateWall(g2d);
 		
-		//Obstacle ob = new Obstacle(300, 0, 2, this);
-		//Obstacle ob2 = new Obstacle(780, 0, 3, this);
-		
-		//ob.drawImage(g2d, wallx, screenY - 90, this);
-		//ob2.drawImage(g2d, wallx, screenY - 110, this);
+		animateObstacles(g2d);
 		
 		Toolkit.getDefaultToolkit().sync();
 		g.dispose();
 	}
 	
+	private void createObstacles(){
+		int gap, lastx, level, len = obstacles.size();
+		double gapRand, levelRand;
+		
+		// MAX PER FRAME = 10		
+		// LEVEL MAX = 5
+		// MIN GAP BETWEEN OBSTACLES = 200
+		
+		if(len == 0){
+			levelRand = Math.random();
+			level = (int) Math.floor(levelRand * 10)%4 + 1;
+			obstacles.add(new Obstacle(screenX, OFFSET_Y, level, this));
+		}
+		
+		else{
+			lastx = obstacles.get(len-1).getX();
+			gapRand = Math.random();
+			gap = 175 + (int) Math.floor(gapRand * 100);
+			if(screenX - lastx > gap){
+				levelRand = Math.random();
+				level = (int) Math.floor(levelRand * 10)%4 + 1;
+				obstacles.add(new Obstacle(screenX, OFFSET_Y, level, this ));
+			}
+		}
+		
+	}
 	
+	private void animateObstacles(Graphics2D g2d){
+		
+		for(Obstacle ob : obstacles){
+			int x = (int) (ob.getX() - angleInc * 50);
+			ob.setX(x);
+			ob.drawImage(g2d, 0, screenY, this);
+		}
+		
+		wallx -= (angleInc * 50); //50 factor to convert the time scale into integer pixels
+		wallx %= screenX;
+		
+		if(obstacles.get(0).getX() <= OFFSET_X * 0.1){
+			obstacles.remove(0);
+		}
+		
+		createObstacles();
+	}
 	
 	private void animateWall(Graphics2D g2d) {
 		if(wallx < screenX)
@@ -97,9 +146,8 @@ public class Board extends JPanel implements ActionListener{
 			g2d.drawImage(wall.getImage(), screenX + (wall.getX() + wallx) % screenX - wall.getImgW(this), wall.getY() + ball.getImage().getHeight(this), this);
 		} // Looping image
 		
-		//System.out.println(walls.get(0).getY() + ball.getImage().getHeight(this) + walls.get(0).getImgH(this));
-		
-		wallx -= (angleInc * 50)%screenX; //50 factor to convert the time scale into integer pixels		
+		// wallx incrementer in animateObstacles(g2d)
+				
 	}
 
 	private void animateBall(Graphics2D g2d) {

@@ -6,7 +6,7 @@ import javax.swing.ImageIcon;
 
 public class Brick {
 		private int x, y;
-		private Image image;
+		private final Image image;
 		
 		public Brick(int x, int y){
 			ImageIcon ii = new ImageIcon(this.getClass().getResource("wall.png"));
