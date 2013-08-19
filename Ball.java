@@ -1,14 +1,14 @@
 package game;
 
 import java.awt.Image;
-//import java.awt.event.KeyEvent;
-
+import java.awt.Rectangle;
+import java.awt.image.ImageObserver;
 
 import javax.swing.ImageIcon;
 
 
 public class Ball {
-	private int curHeight, maxHeight;
+	private int curHeight, maxHeight,x,y;
 	private final int incrHeight;
 	private boolean up, animate;
 	private final Image image;;
@@ -16,6 +16,7 @@ public class Ball {
 	public Ball(int height, double accelFactor){
 		ImageIcon ii = new ImageIcon(this.getClass().getResource("ball.png"));
 		image = ii.getImage();
+		x=y=0;
 		curHeight = 0;
 		incrHeight = -height;
 		this.accelFactor = accelFactor; 
@@ -26,7 +27,7 @@ public class Ball {
 		return image;
 	}
 	
-	public int getY(){
+	public int getH(){
 		return curHeight;
 	}
 	
@@ -60,4 +61,22 @@ public class Ball {
 			}
 		}
 	}
+
+	public void setxy(int x, int y) {
+		this.x = x;
+		this.y = y;
+	}
+	
+	public int getX(){
+		return x;
+	}
+	
+	public int getY(){
+		return y;
+	}
+	
+	public Rectangle getBounds(ImageObserver arg0){
+		return new Rectangle(x, y, image.getWidth(arg0),image.getHeight(arg0));
+	}
+	
 }

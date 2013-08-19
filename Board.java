@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyAdapter;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 
 import javax.swing.Timer;
@@ -27,6 +28,7 @@ public class Board extends JPanel implements ActionListener{
 	private final int OFFSET_X, OFFSET_Y;
 	private ArrayList<Brick> walls;
 	private ArrayList<Obstacle> obstacles;
+	private Obstacle obLast;
 	
 	public Board(int screenW, int screenH){
 		TIME_NORM = 0.02;
@@ -52,6 +54,7 @@ public class Board extends JPanel implements ActionListener{
 		
 		createBrickWall();
 		obstacles = new ArrayList<Obstacle>();
+		obLast = null;
 		createObstacles();
 	}
 
@@ -66,7 +69,7 @@ public class Board extends JPanel implements ActionListener{
 		}		
 	}
 
-	public void startTimer2(){
+	private void startTimer2(){
 		if(timer2 == null){
 			timer2 = new Timer(1500, new TClass());
 			timer2.start();
@@ -102,7 +105,7 @@ public class Board extends JPanel implements ActionListener{
 		if(len == 0){
 			levelRand = Math.random();
 			level = (int) Math.floor(levelRand * 10)%4 + 1;
-			obstacles.add(new Obstacle(screenX, OFFSET_Y, level, this));
+			obstacles.add(new Obstacle(screenX, 0, level, this));
 		}
 		
 		else{
@@ -112,7 +115,7 @@ public class Board extends JPanel implements ActionListener{
 			if(screenX - lastx > gap){
 				levelRand = Math.random();
 				level = (int) Math.floor(levelRand * 10)%4 + 1;
-				obstacles.add(new Obstacle(screenX, OFFSET_Y, level, this ));
+				obstacles.add(new Obstacle(screenX, 0, level, this ));
 			}
 		}
 		
@@ -120,20 +123,59 @@ public class Board extends JPanel implements ActionListener{
 	
 	private void animateObstacles(Graphics2D g2d){
 		
-		for(Obstacle ob : obstacles){
-			int x = (int) (ob.getX() - angleInc * 50);
-			ob.setX(x);
-			ob.drawImage(g2d, 0, screenY, this);
+		int adjustX = 0;
+		
+		if(obLast!=null){
+			int tmp,x;
+			tmp = checkIntersection(obLast);
+			if(tmp != 0)
+				adjustX = tmp;
+			x = (int) (obLast.getX() - angleInc * 50) + adjustX;
+			obLast.setX(x);
+			obLast.setY(screenY - 10);
+			obLast.drawImage(g2d, this);
 		}
+		
+		for(Obstacle ob : obstacles){
+			int tmp,x;
+			tmp = checkIntersection(ob);
+			if(tmp != 0)
+				adjustX = tmp;
+			x = (int) (ob.getX() - angleInc * 50) + adjustX;
+			ob.setX(x);
+			ob.setY(screenY - 10);
+			ob.drawImage(g2d, this);
+		}
+		
+		
 		
 		wallx -= (angleInc * 50); //50 factor to convert the time scale into integer pixels
 		wallx %= screenX;
 		
 		if(obstacles.get(0).getX() <= OFFSET_X * 0.1){
-			obstacles.remove(0);
+			obLast = obstacles.remove(0);
 		}
 		
 		createObstacles();
+	}
+	
+	private int checkIntersection(Obstacle ob){
+
+		Rectangle rball = ball.getBounds(this);
+		Rectangle rob = ob.getBounds();
+		if(rball.intersects(rob)){
+			if(rball.x + rball.width/2 > rob.x + rob.width / 2 ){
+				//ball.setxy(rob.x+rob.width, ball.getY());
+				
+				return -(rob.x + rob.width - rball.x);
+			}
+			
+			else{
+				angleInc = 0;
+				return (rball.x + rball.width - rob.x);
+			}
+		}
+		return 0;
 	}
 	
 	private void animateWall(Graphics2D g2d) {
@@ -151,8 +193,9 @@ public class Board extends JPanel implements ActionListener{
 	}
 
 	private void animateBall(Graphics2D g2d) {
-
-		AffineTransform at = AffineTransform.getTranslateInstance(OFFSET_X, screenY-OFFSET_Y+ball.getY());
+		
+		ball.setxy(OFFSET_X, screenY-OFFSET_Y+ball.getH());
+		AffineTransform at = AffineTransform.getTranslateInstance(ball.getX(), ball.getY());
 		
 		at.rotate(angle, ball.getImage().getWidth(this)*0.5, ball.getImage().getHeight(this)*0.5);
 		angle += angleInc;
