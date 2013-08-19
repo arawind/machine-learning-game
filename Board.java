@@ -1,22 +1,21 @@
 package game;
 
 import java.awt.Color;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.geom.AffineTransform;
-import java.awt.image.ImageObserver;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.Rectangle;
+import java.awt.Font;
 import java.util.ArrayList;
 
 import javax.swing.Timer;
 import javax.swing.JPanel;
-import javax.swing.ImageIcon;
 
 public class Board extends JPanel implements ActionListener{
 	private Timer timer;
@@ -29,7 +28,7 @@ public class Board extends JPanel implements ActionListener{
 	private ArrayList<Brick> walls;
 	private ArrayList<Obstacle> obstacles;
 	private Obstacle obLast;
-	
+	private int score, jumpsReqd;
 	public Board(int screenW, int screenH){
 		TIME_NORM = 0.02;
 		TIME_ACCEL = 0.08;
@@ -46,6 +45,7 @@ public class Board extends JPanel implements ActionListener{
 		ball = new Ball(75, 0.22);
 		angle = 0;
 		wallx = 0;
+		score = jumpsReqd = 0;
 		timer = new Timer(5, this);
 		timer.start();
 		timer2 = null;
@@ -90,6 +90,12 @@ public class Board extends JPanel implements ActionListener{
 		
 		animateObstacles(g2d);
 		
+		Font abc = new Font("Arial", Font.PLAIN, 18);
+		FontMetrics metr = this.getFontMetrics(abc);
+		String strScore = "Jumps: " + String.valueOf(score) + "  Reqd Jumps: " + String.valueOf(jumpsReqd);
+		g.setColor(Color.white);
+		g.setFont(abc);
+		g.drawString(strScore, (screenX - metr.stringWidth(strScore))/2, abc.getSize());
 		Toolkit.getDefaultToolkit().sync();
 		g.dispose();
 	}
@@ -124,6 +130,15 @@ public class Board extends JPanel implements ActionListener{
 	private void animateObstacles(Graphics2D g2d){
 		
 		int adjustX = 0;
+
+		if(obstacles.get(0).getX() <= OFFSET_X * 0.1){
+			obLast = obstacles.remove(0);
+			
+			if(obLast.getLevel()>2)
+				jumpsReqd += 2;
+			else
+				jumpsReqd++;
+		}
 		
 		if(obLast!=null){
 			int tmp,x;
@@ -152,9 +167,6 @@ public class Board extends JPanel implements ActionListener{
 		wallx -= (angleInc * 50); //50 factor to convert the time scale into integer pixels
 		wallx %= screenX;
 		
-		if(obstacles.get(0).getX() <= OFFSET_X * 0.1){
-			obLast = obstacles.remove(0);
-		}
 		
 		createObstacles();
 	}
@@ -234,6 +246,7 @@ public class Board extends JPanel implements ActionListener{
 			if(keycode == KeyEvent.VK_UP){
 				startTimer2();
 				ball.animate();
+				score++;
 				//better responsiveness with this block in keyPressed than in keyReleased
 			}
 			if(keycode == KeyEvent.VK_RIGHT)

@@ -39,6 +39,10 @@ public class Obstacle {
 		this.y = y - brickH * (level+1);
 	}
 	
+	public int getLevel(){
+		return level;
+	}
+	
 	public void drawImage(Graphics2D g2d, ImageObserver arg0){
 		for(Brick brick : bricks){
 			g2d.drawImage(brick.getImage(), this.getX(), y + brick.getY(), arg0);
