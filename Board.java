@@ -42,7 +42,7 @@ public class Board extends JPanel implements ActionListener{
 		
 		screenX = screenW;
 		screenY = screenH;		
-		ball = new Ball(75, 0.22);
+		ball = new Ball(75, 0.22, TIME_NORM);
 		angle = 0;
 		wallx = 0;
 		score = jumpsReqd = 0;
@@ -206,7 +206,7 @@ public class Board extends JPanel implements ActionListener{
 
 	private void animateBall(Graphics2D g2d) {
 		
-		ball.setxy(OFFSET_X, screenY-OFFSET_Y+ball.getH());
+		ball.setxya(OFFSET_X, screenY-OFFSET_Y+ball.getH(), Math.abs(angleInc));
 		AffineTransform at = AffineTransform.getTranslateInstance(ball.getX(), ball.getY());
 		
 		at.rotate(angle, ball.getImage().getWidth(this)*0.5, ball.getImage().getHeight(this)*0.5);

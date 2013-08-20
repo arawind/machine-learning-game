@@ -12,14 +12,17 @@ public class Ball {
 	private final int incrHeight;
 	private boolean up, animate;
 	private final Image image;;
-	private final double accelFactor;
-	public Ball(int height, double accelFactor){
+	private final double accelFactor, norm;
+	private double accel;
+	public Ball(int height, double accelFactor, double norm){
 		ImageIcon ii = new ImageIcon(this.getClass().getResource("ball.png"));
 		image = ii.getImage();
 		x=y=0;
 		curHeight = 0;
 		incrHeight = -height;
-		this.accelFactor = accelFactor; 
+		this.accelFactor = accelFactor;
+		this.norm = norm;
+		accel = 1;
 		up = true;
 	}
 	
@@ -47,11 +50,11 @@ public class Ball {
 	
 	public void move(){
 		if(animate){
-			int accel = (int) Math.floor(Math.pow(Math.abs(curHeight - maxHeight), accelFactor));
+			int acc = (int) Math.floor(Math.pow(Math.abs(curHeight - maxHeight), accelFactor * accel));
 			if(up)
-				curHeight -= accel;
+				curHeight -= acc;
 			else
-				curHeight += accel;
+				curHeight += acc;
 			if(curHeight <= maxHeight){
 				up = false;
 				curHeight += 1;
@@ -62,9 +65,10 @@ public class Ball {
 		}
 	}
 
-	public void setxy(int x, int y) {
+	public void setxya(int x, int y, double accel) {
 		this.x = x;
 		this.y = y;
+		this.accel = accel/norm;
 	}
 	
 	public int getX(){
