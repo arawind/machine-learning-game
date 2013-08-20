@@ -27,8 +27,10 @@ public class Board extends JPanel implements ActionListener{
 	private final int OFFSET_X, OFFSET_Y;
 	private ArrayList<Brick> walls;
 	private ArrayList<Obstacle> obstacles;
+	private ArrayList<Data> data;
 	private Obstacle obLast;
 	private int score, jumpsReqd;
+	private Duration durUP, durLEFT, durRIGHT;
 	public Board(int screenW, int screenH){
 		TIME_NORM = 0.02;
 		TIME_ACCEL = 0.08;
@@ -54,8 +56,13 @@ public class Board extends JPanel implements ActionListener{
 		
 		createBrickWall();
 		obstacles = new ArrayList<Obstacle>();
+		data = new ArrayList<Data>();
 		obLast = null;
 		createObstacles();
+		
+		durUP = new Duration();
+		durLEFT = new Duration();
+		durRIGHT = new Duration();
 	}
 
 	
@@ -131,7 +138,7 @@ public class Board extends JPanel implements ActionListener{
 		
 		int adjustX = 0;
 
-		if(obstacles.get(0).getX() <= OFFSET_X * 0.1){
+		if(obstacles.get(0).getX() <= OFFSET_X + obstacles.get(0).getW()){
 			obLast = obstacles.remove(0);
 			
 			if(obLast.getLevel()>2)
@@ -236,10 +243,20 @@ public class Board extends JPanel implements ActionListener{
 	public class TAdapter extends KeyAdapter{
 		public void keyReleased(KeyEvent e){
 			int keycode = e.getKeyCode();
-			if(keycode == KeyEvent.VK_RIGHT)
+			int level = obstacles.get(0).getLevel();
+			int pos = obstacles.get(0).getX();
+			// 0 = up, 1 = right, 2 = left
+			if(keycode == KeyEvent.VK_RIGHT){
 				angleInc = TIME_NORM;
-			if(keycode == KeyEvent.VK_LEFT)
+				data.add(new Data(level, pos, keycode, durRIGHT.stop(), 0));
+			}
+			if(keycode == KeyEvent.VK_LEFT){
 				angleInc = TIME_NORM;
+				data.add(new Data(level, pos, keycode, durLEFT.stop(), 0));
+			}
+			if(keycode == KeyEvent.VK_UP){
+				data.add(new Data(level, pos, keycode, durUP.stop(), ball.getJumps()));
+			}
 		}
 		public void keyPressed(KeyEvent e){
 			int keycode = e.getKeyCode();
@@ -247,12 +264,50 @@ public class Board extends JPanel implements ActionListener{
 				startTimer2();
 				ball.animate();
 				score++;
+				durUP.start();
 				//better responsiveness with this block in keyPressed than in keyReleased
 			}
-			if(keycode == KeyEvent.VK_RIGHT)
+			if(keycode == KeyEvent.VK_RIGHT){
 				angleInc = TIME_ACCEL;
-			if(keycode == KeyEvent.VK_LEFT)
+				durRIGHT.start();
+			}
+			if(keycode == KeyEvent.VK_LEFT){
 				angleInc = - TIME_ACCEL;
+				durLEFT.start();
+			}
+			if(keycode == KeyEvent.VK_S)
+				saveData();
+		}
+		
+	}
+	
+	private void saveData() {
+		for(Data d:data){
+			System.out.println(d.getKey() + " " + d.getLevel()+ " " + d.getPos() + " " + d.getDuration() +" "+ d.getJumps());
+		}
+	}
+	
+	public class Duration {
+		private long before, current;
+		private boolean running;
+		public Duration(){
+			before = 0;
+			current = 0;
+			running = false;
+		}
+		public boolean isRunning(){
+			return running;
+		}
+		public void start(){
+			if(!running){
+				before = System.currentTimeMillis();
+				running = true;
+			}
+		}
+		public long stop(){
+			current = System.currentTimeMillis();
+			running = false;
+			return current-before;
 		}
 	}
 }

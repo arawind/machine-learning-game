@@ -31,6 +31,10 @@ public class Obstacle {
 		return y;
 	}
 	
+	public int getW(){
+		return brickW;
+	}
+	
 	public void setX(int x){
 		this.x = x;
 	}

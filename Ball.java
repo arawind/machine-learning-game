@@ -79,6 +79,10 @@ public class Ball {
 		return y;
 	}
 	
+	public int getJumps(){
+		return (int)maxHeight/incrHeight;
+	}
+	
 	public Rectangle getBounds(ImageObserver arg0){
 		return new Rectangle(x, y, image.getWidth(arg0),image.getHeight(arg0));
 	}
